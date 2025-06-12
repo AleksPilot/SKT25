@@ -1,0 +1,3 @@
+﻿  SKT.cpp
+C:\Users\AleksPilot\Desktop\учеба\сем2\СКТ\SKT\SKT.cpp(77,8): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+  SKT.vcxproj -> C:\Users\AleksPilot\Desktop\учеба\сем2\СКТ\SKT\x64\Debug\SKT.exe
