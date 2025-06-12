@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+//#include "PTS_GEN.cpp"
 
 using namespace std;
 
@@ -15,25 +16,72 @@ struct cell {
 
 
 string line;
-int ROWS = 16;
-int COLS = 32;
+int ROWS = 6;
+int COLS = 9;
 int NUM = COLS; //количество приемников 
 
-;
+
 cell start;
 
 //в данной задаче будем считать расположение приемников идентично клеткам, размер ячейки 1х1, MesOmegaK = 1;
 vector<cell> receiver_positions; // = (i, 0) for 0 <= i <= NUM (см. ниже)
-vector<vector<cell>> P;
+vector<vector<cell>> P; //P0
 vector<vector<cell>> P_out; //вычисленные P
 
 double coeff;
-
+void Gen();
+void inverse();
+void direct(bool flag, vector<vector<cell>>P);
+double Functional();
 vector<cell> initialS; //сигналы в начальный момент времени
 vector<cell> clS;
 vector<cell> CalculatedS; //после вычисления p
 
 vector<double> b; //b из уравнения
+
+void writing()
+{
+	Gen();
+
+	direct(false, P);
+	inverse();
+	direct(true, P_out);
+	// Создаем или открываем файл для записи
+	ofstream outFile("points.txt");
+
+	if (!outFile.is_open()) {
+		cerr << "Error in opening the file points.txt!" << endl;
+	}
+
+	// Записываем точки для первого графика (из P)
+	for (size_t i = 0; i < P.size(); i++) {
+		for (size_t j = 0; j < P[i].size(); j++) {
+			outFile << P[i][j].x << " " << P[i][j].y << " ";
+		}
+		outFile << endl;
+	}
+
+	// Записываем разделитель
+	outFile << "---" << endl;
+
+	// Записываем точки для второго графика (из P_out)
+	for (size_t i = 0; i < P_out.size(); i++) {
+		for (size_t j = 0; j < P_out[i].size(); j++) {
+			outFile << P_out[i][j].x << " " << P_out[i][j].y << " ";
+		}
+		outFile << endl;
+	}
+
+	// Закрываем файл
+	outFile.close();
+
+	cout << "Data in points.txt renewed!" << endl;
+
+	//cout << Functional();
+
+
+}
+
 
 void direct(bool flag, vector<vector<cell>>P) {
 	for (size_t i = 0; i < NUM; i++) 
@@ -93,9 +141,9 @@ void SLAE(vector<vector<double>>& A, vector<double>& b) { //GAUSS, не было
 		}
 
 		// Проверка на нулевой диагональный элемент
-		/*if (abs(A[i][i]) < 1e-10) {
-			throw runtime_error("Matrix is singular or ill-conditioned");
-		}*/
+		//if (abs(A[i][i]) < 1e-10) {
+			//throw runtime_error("Matrix is singular or ill-conditioned");
+		//}
 
 		
 		double div = A[i][i];
@@ -122,7 +170,17 @@ void SLAE(vector<vector<double>>& A, vector<double>& b) { //GAUSS, не было
 			A[k][i] = 0; 
 		}
 	}
+	int k = 0;
+	for (size_t x = 0; x < ROWS; x++) {
+		for (size_t y = 0; y < COLS; y++)
+		{
+			P_out[x][y].x = b[k];
+			P_out[x][y].y = b[k + 1];
+			k += 2;
+		}
+	}
 }
+
 
 void inverse() {
 	vector<vector<double>> Glob(2 * NUM, vector<double>(2 * ROWS * COLS));
@@ -138,7 +196,7 @@ void inverse() {
 				cell cell_center;
 				cell_center.x = start.x + double((x + 0.5));
 				cell_center.y = start.y - double((y + 0.5));
-				//cout << centr_yach.x << " " << centr_yach.y << endl;
+				
 				//P ->-V
 				double Local[2][2];
 				//r = abs(vec(receiver, cell_center))
@@ -213,7 +271,7 @@ double Functional() {
 
 
 void Gen() { //value - значение намагниченности в неоднородности
-	NUM = 32;
+	
 	receiver_positions.resize(NUM);
 	for (int i = 0; i < NUM; i++)
 	{
@@ -222,8 +280,9 @@ void Gen() { //value - значение намагниченности в нео
 
 	}
 	start = { 0, 0 };
-	ROWS = 16;
-	COLS = 32;
+	ROWS = 6;
+	COLS = 9;
+	NUM = COLS;
 	double I = 1;
 	P.resize(ROWS);
 	P_out.resize(ROWS);
@@ -277,5 +336,5 @@ int main()
 		}
 	}
 	cout << Functional();
-
+	writing();
 }
